@@ -44,7 +44,7 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - `image()` remembers a path that was missing. Put images in place before the mod references them, or use a new filename.
 - `image()` paths are relative to the Herdr home. Keep `mods/<name>/...` when renaming a mod.
 - `herdr-app check` does not catch an undefined name; look at the window.
-- Tabs not listed in `jobs.json`, and spaces not in `places.json`, get a fixed pick from their name.
+- Tabs not listed in `jobs.json` get a free job from `assignJobs`, in tab order, so faces repeat only past eight names. Closing or reordering tabs can move an unlisted tab to another face; list it in `jobs.json` to pin it. Spaces not in `places.json` get a fixed pick from their name.
 - The clones are of Herdr 0.1.11, and a clean install also passed on 0.1.12. Re-check them after an app update.
 - `herdr-app check` really loads a mod, so `inbox` creates `data/inbox/files` and each mod gets a `data/<mod>/` folder before the layout is switched.
 - Portraits depend on each machine's `jobs.json`. Two machines match only if they have the same file.

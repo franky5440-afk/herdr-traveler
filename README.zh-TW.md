@@ -34,7 +34,7 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 ## 自訂
 
-- **頭像：** 改 `mods/traveler-agents/jobs.json`，分頁和卡片共用這一份。分頁名稱對應 `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer`；沒列到的會依名稱固定配一位。
+- **頭像：** 改 `mods/traveler-agents/jobs.json`，分頁和卡片共用這一份。分頁名稱對應 `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer`；沒列到的會自動配還沒被用掉的角色，八位用完才會重複。
 - **建築：** 改 `mods/traveler-spaces/places.json`，例如 `{"My Mac": "palace"}`。可選 `palace`、`mansion`、`church`、`colosseum`。
 - **換圖：** prompt 在 [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md)。
 - **每台機器頭像一致：** 頭像由分頁名稱和該機器的 `jobs.json` 決定，把同一份 `jobs.json` 複製到每台機器就好。

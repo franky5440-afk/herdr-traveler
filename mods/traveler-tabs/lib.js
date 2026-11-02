@@ -44,11 +44,38 @@ export function jobFor(name, jobs) {
   return null;
 }
 
-// Pick a fixed job from the name when jobs.json doesn't list it, so a fresh install has portraits.
-export function jobOf(name, jobs) {
-  const named = jobFor(name, jobs);
-  if (named || typeof name !== "string" || name.trim() === "") return named;
-  return JOBS[[...name.trim().toLowerCase()].reduce((n, c) => n + c.codePointAt(0), 0) % JOBS.length];
+// 目前所有分頁的名稱，依畫面順序，再補只出現在 agents 的。新分頁排在後面，舊分頁就不會換人。
+export function tabNames(spaces, agents) {
+  return [
+    ...(spaces ?? []).flatMap((s) => (s.tabs ?? []).map((t) => t.name)),
+    ...(agents ?? []).map((a) => a.tab_name),
+  ];
+}
+
+const nameKey = (name) => name.trim().toLowerCase();
+
+// 配職業：jobs.json 有寫的優先，其餘依名稱起算、跳過已被用掉的，八位都用完才重複。
+export function assignJobs(names, jobs) {
+  const list = [...new Set((names ?? []).filter((n) => typeof n === "string" && n.trim() !== "").map(nameKey))];
+  const out = new Map();
+  const used = new Set();
+  for (const key of list) {
+    const job = jobFor(key, jobs);
+    if (job) { out.set(key, job); used.add(job); }
+  }
+  for (const key of list) {
+    if (out.has(key)) continue;
+    if (used.size >= JOBS.length) used.clear();
+    const start = [...key].reduce((n, c) => n + c.codePointAt(0), 0);
+    const job = Array.from({ length: JOBS.length }, (_, i) => JOBS[(start + i) % JOBS.length]).find((j) => !used.has(j));
+    out.set(key, job);
+    used.add(job);
+  }
+  return out;
+}
+
+export function jobIn(name, assigned) {
+  return typeof name === "string" ? assigned.get(nameKey(name)) ?? null : null;
 }
 
 // image() 只讀 Herdr 家目錄的相對路徑；只給八個已知職業，避免組出跳脫路徑。

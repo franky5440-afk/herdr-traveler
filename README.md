@@ -34,7 +34,7 @@ Name clashes: never overwrite your own files. Rename first.
 
 ## Customize
 
-- **Portraits:** edit `mods/traveler-agents/jobs.json`; tabs and cards share it. Tab names map to `warrior`, `merchant`, `thief`, `cleric`, `scholar`, `hunter`, `apothecary` or `dancer`. Unlisted tabs get a fixed pick.
+- **Portraits:** edit `mods/traveler-agents/jobs.json`; tabs and cards share it. Tab names map to `warrior`, `merchant`, `thief`, `cleric`, `scholar`, `hunter`, `apothecary` or `dancer`. Unlisted tabs get a free character, so nobody repeats until all eight are taken.
 - **Buildings:** edit `mods/traveler-spaces/places.json`, for example `{"My Mac": "palace"}`. Options: `palace`, `mansion`, `church`, `colosseum`.
 - **New art:** prompts are in [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md).
 - **Same faces on every machine:** a portrait comes from the tab name and that machine's `jobs.json`. Copy the same `jobs.json` to each machine.

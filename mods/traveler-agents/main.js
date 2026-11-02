@@ -2,8 +2,8 @@
 // 只讀快取檔、不跑指令、不連網、不讀對話紀錄與憑證，沒有數字就不畫數字。
 import { View, div, image, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { agents, appHome, readTextFile, run, setAgentOrder, theme, watchFolder } from "herdr";
-import { cachePath, gauge, jobOf, parseCache, portraitPath } from "./lib.js";
+import { agents, appHome, readTextFile, run, setAgentOrder, spaces, theme, watchFolder } from "herdr";
+import { assignJobs, cachePath, gauge, jobIn, parseCache, portraitPath, tabNames } from "./lib.js";
 
 const HOME = appHome();
 const SESSIONS_DIR = `${HOME}/data/traveler/sessions`;
@@ -12,8 +12,8 @@ const PIC = 72;
 const STATUS = { working: "Working", blocked: "Needs you", done: "Done", idle: "Idle" };
 
 // 肖像：配到職業就畫肖像圖；沒配到退回程式圖示（單色用 svg、圖片用 image），都沒有就留空。
-function portrait(a, jobs, t) {
-  const src = portraitPath(jobOf(a.tab_name, jobs));
+function portrait(a, assigned, t) {
+  const src = portraitPath(jobIn(a.tab_name, assigned));
   if (src) return image(src).w(PIC).h(PIC).flex_none();
   const p = a.program;
   if (!p?.icon) return div().w(PIC).h(PIC).flex_none();
@@ -143,7 +143,7 @@ export default class Traveler extends View {
       .cursor_pointer()
       .hover((s) => s.bg(t.hover))
       .on_click(() => run("agent.focus", { terminal: a.address }))
-      .child(portrait(a, this.jobs, t))
+      .child(portrait(a, this.assigned, t))
       .child(
         v_flex()
           .flex_1()
@@ -166,6 +166,7 @@ export default class Traveler extends View {
   render(cx) {
     const t = theme();
     const list = agents();
+    this.assigned = assignJobs(tabNames(spaces(), list), this.jobs);
     setAgentOrder(list.map((a) => a.address));
     // 剛出現的本機 agent 先補讀一次快取，不用等下一次計時器。
     if (list.some((a) => !this.seen.has(a.address) && cachePath(HOME, a.address) !== null)) this.load(cx);

@@ -34,7 +34,7 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 ## カスタマイズ
 
-- **顔グラフィック:** `mods/traveler-agents/jobs.json` を編集します。タブとカードで共通です。タブ名に `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer` を対応させます。一覧にないタブには、名前から固定で割り当てます。
+- **顔グラフィック:** `mods/traveler-agents/jobs.json` を編集します。タブとカードで共通です。タブ名に `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer` を対応させます。一覧にないタブには空いているキャラクターを割り当て、8 人全員が使われるまで重複しません。
 - **建物:** `mods/traveler-spaces/places.json` を編集します。例: `{"My Mac": "palace"}`。選択肢は `palace`、`mansion`、`church`、`colosseum` です。
 - **新しい画像:** プロンプトは [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md) にあります。
 - **全マシンで同じ顔にする:** 顔グラフィックはタブ名とそのマシンの `jobs.json` で決まります。同じ `jobs.json` を各マシンにコピーしてください。
