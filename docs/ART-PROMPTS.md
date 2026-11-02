@@ -77,3 +77,11 @@ changes（傳送點）: Pixel art game icon of one round magic portal, glowing v
 - 背景不是純綠：補 `flat single color background, no gradient, no shadow on background`。
 - 八張畫風不一致：用最滿意的一張當參考圖，在同一個對話裡接著生成。
 - 桌布太亮：補 `darker, night tones, muted highlights`。
+
+## World map
+
+Z-Image Turbo, seed 555772, 9 steps, 1728x1296. Cropped to the inner frame and darkened: RGB × 0.85 × 0.92 + `#0e1426` × 0.08. Check the coastline by eye: this model drifts toward real places when asked for a map, and "unlike anywhere real" doesn't stop it. Naming each region's terrain works better.
+
+```
+Flat top-down antique fantasy cartography, watercolor and sepia ink on stained parchment, extremely dense intricate detail, the land covers seventy percent of the page and runs off every edge. A sprawling invented land of many crooked branching peninsulas, narrow winding gulfs and ragged fractal coastlines. Upper area pale snow fields and white ink mountains; left area clusters of brown stepped plateaus with pale green hollows; middle sage green woodland; lower area sandy ochre desert with winding inland lakes; lower right hundreds of tiny crowded grey-brown triangular peaks. Dozens of tiny round walled cities seen from above, thin white rivers and roads branching everywhere, dotted trails. Slate blue-grey sea with fine hatching, tiny ships and sea creatures. Thousands of small hand-drawn marks, no isometric side view, no floating island, no text, no letters, no border.
+```

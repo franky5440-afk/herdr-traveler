@@ -7,6 +7,7 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 **What you see:**
 
 - **Theme `traveler-dusk`:** deep indigo `#0e1426`, panels `#171f38`, antique gold `#c9a961`, parchment text `#e8dcc0`, ember orange `#d9772f`. Square corners with thin gold frames, no radius.
+- **Terminals** sit on a hand-drawn fantasy world map: the tab block's pane `background` is `mods/traveler-chrome/map.png` (`cover`), and root `terminal_opacity` is `0.6`, so it shows behind the text. Each split pane crops the map for itself.
 - **Left sidebar, 268px,** one continuous painted town from top to bottom (`mods/traveler-chrome/sidebar.png`, `cover`). Translucent header 46px, footer 69px.
 - **Spaces, top half of the sidebar.** A 76px row per space with a 72px building portrait, the name, and up to three git lines: uncommitted files (`ansi3`), unpushed commits (`ansi2`), repos without a remote (`ansi1`). A clean space shows only its name. The active row has a gold frame on `surface` at `c8` alpha.
 - **Agents, bottom half of the sidebar.** One framed card per agent: 72px portrait, tab name, status word, HP bar in `accent`, SP bar in `solid`.
@@ -43,6 +44,7 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - A mod cannot import from outside its own folder, so `lib.js` exists twice. Change both.
 - `image()` remembers a path that was missing. Put images in place before the mod references them, or use a new filename.
 - `image()` paths are relative to the Herdr home. Keep `mods/<name>/...` when renaming a mod.
+- Terminal text sits on the map. Lower `terminal_opacity` makes it stronger but harder to read; 0.75 and up nearly hides it. Herdr caches a background by filename, so a new picture needs a new name.
 - `herdr-app check` does not catch an undefined name; look at the window.
 - Tabs not listed in `jobs.json` get a free job from `assignJobs`, in tab order, so faces repeat only past eight names. Closing or reordering tabs can move an unlisted tab to another face; list it in `jobs.json` to pin it. Spaces not in `places.json` get a fixed pick from their name.
 - The clones are of Herdr 0.1.11, and a clean install also passed on 0.1.12. Re-check them after an app update.

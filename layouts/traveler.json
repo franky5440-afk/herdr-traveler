@@ -107,7 +107,10 @@
                     "height": 30,
                     "position": "top"
                   },
-                  "background": "background",
+                  "background": {
+                    "image": "mods/traveler-chrome/map.png",
+                    "fit": "cover"
+                  },
                   "border": {
                     "width": 1,
                     "color": "#c9a96199"
@@ -194,5 +197,6 @@
     12,
     16
   ],
-  "theme": "traveler-dusk"
+  "theme": "traveler-dusk",
+  "terminal_opacity": 0.6
 }
