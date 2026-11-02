@@ -1,0 +1,9 @@
+Traveler layout for Herdr
+Copyright 2026 Frank Lin
+
+mods/traveler-spaces, mods/traveler-tabs and mods/traveler-chrome are derived
+from the built-in mods spaces, tabs and workspace-chrome of Herdr 0.1.11
+(Apache License 2.0). They were modified: radius removed, panel fills made
+translucent, portraits, building images and git summaries added.
+
+Images are not covered by the Apache License. See ART-NOTICE.md.
