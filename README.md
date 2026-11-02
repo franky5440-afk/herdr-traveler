@@ -32,6 +32,8 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 Name clashes: never overwrite your own files. Rename first.
 
+Updating: these steps overwrite `mods/traveler-agents/jobs.json` and `mods/traveler-spaces/places.json`. Back up both first, then put them back.
+
 ## Customize
 
 - **Portraits:** edit `mods/traveler-agents/jobs.json`; tabs and cards share it. Tab names map to `warrior`, `merchant`, `thief`, `cleric`, `scholar`, `hunter`, `apothecary` or `dancer`. Unlisted tabs get a free character, so nobody repeats until all eight are taken.

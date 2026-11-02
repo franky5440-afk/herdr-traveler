@@ -32,6 +32,8 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 名前が重なる場合は、自分のファイルを上書きせず、先に名前を変更してください。
 
+更新するとき: 上の手順は `mods/traveler-agents/jobs.json` と `mods/traveler-spaces/places.json` を上書きします。先にこの 2 つをバックアップし、インストール後に戻してください。
+
 ## カスタマイズ
 
 - **顔グラフィック:** `mods/traveler-agents/jobs.json` を編集します。タブとカードで共通です。タブ名に `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer` を対応させます。一覧にないタブには空いているキャラクターを割り当て、8 人全員が使われるまで重複しません。

@@ -32,6 +32,8 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 名稱撞到時不要覆蓋自己的檔案，先改名。
 
+更新時：上面的步驟會蓋掉 `mods/traveler-agents/jobs.json` 和 `mods/traveler-spaces/places.json`，請先備份這兩個檔案，裝完再放回去。
+
 ## 自訂
 
 - **頭像：** 改 `mods/traveler-agents/jobs.json`，分頁和卡片共用這一份。分頁名稱對應 `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer`；沒列到的會自動配還沒被用掉的角色，八位用完才會重複。
