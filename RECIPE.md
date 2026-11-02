@@ -45,12 +45,16 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - `image()` paths are relative to the Herdr home. Keep `mods/<name>/...` when renaming a mod.
 - `herdr-app check` does not catch an undefined name; look at the window.
 - Tabs not listed in `jobs.json`, and spaces not in `places.json`, get a fixed pick from their name.
-- The clones are of Herdr 0.1.11. Re-check them after an app update.
+- The clones are of Herdr 0.1.11, and a clean install also passed on 0.1.12. Re-check them after an app update.
+- `herdr-app check` really loads a mod, so `inbox` creates `data/inbox/files` and each mod gets a `data/<mod>/` folder before the layout is switched.
+- Portraits depend on each machine's `jobs.json`. Two machines match only if they have the same file.
 - HP/SP need the optional script and only work for Claude Code. Other agents show `—`.
 - On a remote machine, counts update when the machine is reachable.
 - Keep `safe.bareRepository=explicit` on the `git status` call: without it, a bare repo committed inside a clone can run a filter as soon as a terminal enters it. It can't stop filters in a repo's own `.git/config`, so tell people not to open terminals in repos they don't trust.
 
 **Done when:**
+
+Herdr must have an open window, and the screen must be unlocked: `herdr-app shot` returns a stale picture on a locked screen.
 
 - `herdr-app check` passes for every mod in `mods/`, and `herdr-app status` shows no errors after `layout.switch {"name":"traveler"}`.
 - Each space shows a building, each agent card and tab shows a portrait, Files shows a book, Changes a ship and Inbox a portal, and Inbox opens beside the terminal.

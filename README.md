@@ -37,6 +37,7 @@ Name clashes: never overwrite your own files. Rename first.
 - **Portraits:** edit `mods/traveler-agents/jobs.json`; tabs and cards share it. Tab names map to `warrior`, `merchant`, `thief`, `cleric`, `scholar`, `hunter`, `apothecary` or `dancer`. Unlisted tabs get a fixed pick.
 - **Buildings:** edit `mods/traveler-spaces/places.json`, for example `{"My Mac": "palace"}`. Options: `palace`, `mansion`, `church`, `colosseum`.
 - **New art:** prompts are in [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md).
+- **Same faces on every machine:** a portrait comes from the tab name and that machine's `jobs.json`. Copy the same `jobs.json` to each machine.
 
 ## HP and SP (optional, Claude Code)
 
@@ -52,6 +53,18 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 ```
 
 Add that to `~/.claude/settings.json`. If you already have a status line, it will be replaced. The script stores only numbers. Without it, HP and SP show `—`.
+
+## Uninstall
+
+```sh
+H=~/.config/herdr-app
+herdr-app do layout.switch '{"name":"main"}'
+rm -rf "$H"/mods/traveler-agents "$H"/mods/traveler-chrome "$H"/mods/traveler-spaces "$H"/mods/traveler-tabs "$H"/mods/inbox
+rm -rf "$H"/data/traveler-agents "$H"/data/traveler-chrome "$H"/data/traveler-spaces "$H"/data/traveler-tabs "$H"/data/traveler "$H"/data/inbox
+rm -f "$H"/layouts/traveler.json "$H"/layouts/traveler.png "$H"/layouts/.state/traveler.json "$H"/themes/traveler-dusk.json
+```
+
+This also deletes everything in your inbox folder, so move anything you want to keep first. Herdr keeps the mod names in its own `seen.json`, which is harmless.
 
 ## What it does on your machine
 

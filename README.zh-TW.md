@@ -37,6 +37,7 @@ herdr-app do layout.switch '{"name":"traveler"}'
 - **頭像：** 改 `mods/traveler-agents/jobs.json`，分頁和卡片共用這一份。分頁名稱對應 `warrior`、`merchant`、`thief`、`cleric`、`scholar`、`hunter`、`apothecary`、`dancer`；沒列到的會依名稱固定配一位。
 - **建築：** 改 `mods/traveler-spaces/places.json`，例如 `{"My Mac": "palace"}`。可選 `palace`、`mansion`、`church`、`colosseum`。
 - **換圖：** prompt 在 [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md)。
+- **每台機器頭像一致：** 頭像由分頁名稱和該機器的 `jobs.json` 決定，把同一份 `jobs.json` 複製到每台機器就好。
 
 ## HP 和 SP（選用，Claude Code）
 
@@ -52,6 +53,18 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 ```
 
 加進 `~/.claude/settings.json`。原本已有 status line 的話會被取代。腳本只存數字；沒裝時 HP、SP 顯示 `—`。
+
+## 解除安裝
+
+```sh
+H=~/.config/herdr-app
+herdr-app do layout.switch '{"name":"main"}'
+rm -rf "$H"/mods/traveler-agents "$H"/mods/traveler-chrome "$H"/mods/traveler-spaces "$H"/mods/traveler-tabs "$H"/mods/inbox
+rm -rf "$H"/data/traveler-agents "$H"/data/traveler-chrome "$H"/data/traveler-spaces "$H"/data/traveler-tabs "$H"/data/traveler "$H"/data/inbox
+rm -f "$H"/layouts/traveler.json "$H"/layouts/traveler.png "$H"/layouts/.state/traveler.json "$H"/themes/traveler-dusk.json
+```
+
+收件匣資料夾裡的檔案也會一起刪掉，要留的請先搬走。Herdr 自己的 `seen.json` 會留下 MOD 名稱，不影響使用。
 
 ## 它會在你的電腦上做什麼
 
