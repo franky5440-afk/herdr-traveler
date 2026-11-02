@@ -38,6 +38,11 @@ herdr-app do layout.switch '{"name":"traveler"}'
 - **建物:** `mods/traveler-spaces/places.json` を編集します。例: `{"My Mac": "palace"}`。選択肢は `palace`、`mansion`、`church`、`colosseum` です。
 - **新しい画像:** プロンプトは [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md) にあります。
 - **全マシンで同じ顔にする:** 顔グラフィックはタブ名とそのマシンの `jobs.json` で決まります。同じ `jobs.json` を各マシンにコピーしてください。
+- **サウンド:** このレイアウトにサウンドは含まれていないため、ご自身のものを使ってください。MP3 を `~/.config/herdr-app/sounds/` に置き、下のキーを `~/.config/herdr-app/settings.json` に追加します。ほかの設定はそのまま残してください。`done` はエージェントの完了時、`blocked` は対応が必要なときに鳴ります。Settings > Alerts の Play ボタンで試聴できます。サウンドは個人設定なので、レイアウトを切り替えても残ります。使用する権利のあるファイルを使ってください。
+
+  ```json
+  "sounds": { "enabled": true, "done": "sounds/done.mp3", "blocked": "sounds/blocked.mp3" }
+  ```
 
 ## HP と SP(任意、Claude Code)
 

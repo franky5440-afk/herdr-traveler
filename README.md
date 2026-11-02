@@ -38,6 +38,11 @@ Name clashes: never overwrite your own files. Rename first.
 - **Buildings:** edit `mods/traveler-spaces/places.json`, for example `{"My Mac": "palace"}`. Options: `palace`, `mansion`, `church`, `colosseum`.
 - **New art:** prompts are in [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md).
 - **Same faces on every machine:** a portrait comes from the tab name and that machine's `jobs.json`. Copy the same `jobs.json` to each machine.
+- **Sounds:** none are included, so use your own. Put MP3 files in `~/.config/herdr-app/sounds/` and add the key below to `~/.config/herdr-app/settings.json`, keeping your other settings. `done` plays when an agent finishes, `blocked` when it needs you. Test them with the Play buttons in Settings > Alerts. Sounds belong to your settings, so switching layouts keeps them; use only files you have the rights to.
+
+  ```json
+  "sounds": { "enabled": true, "done": "sounds/done.mp3", "blocked": "sounds/blocked.mp3" }
+  ```
 
 ## HP and SP (optional, Claude Code)
 

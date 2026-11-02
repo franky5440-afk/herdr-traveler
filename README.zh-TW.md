@@ -38,6 +38,11 @@ herdr-app do layout.switch '{"name":"traveler"}'
 - **建築：** 改 `mods/traveler-spaces/places.json`，例如 `{"My Mac": "palace"}`。可選 `palace`、`mansion`、`church`、`colosseum`。
 - **換圖：** prompt 在 [docs/ART-PROMPTS.md](docs/ART-PROMPTS.md)。
 - **每台機器頭像一致：** 頭像由分頁名稱和該機器的 `jobs.json` 決定，把同一份 `jobs.json` 複製到每台機器就好。
+- **音效：** 這個版面不附音效，請用自己的。把 MP3 放到 `~/.config/herdr-app/sounds/`，再把下面這段加進 `~/.config/herdr-app/settings.json`，其他設定保留。`done` 在 agent 完成時播放，`blocked` 在它需要你時播放。到 Settings > Alerts 按 Play 試聽。音效屬於個人設定，換版面後還在；請使用你有權使用的檔案。
+
+  ```json
+  "sounds": { "enabled": true, "done": "sounds/done.mp3", "blocked": "sounds/blocked.mp3" }
+  ```
 
 ## HP 和 SP（選用，Claude Code）
 
