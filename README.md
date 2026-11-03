@@ -6,6 +6,8 @@ Turn your Herdr window into a pixel RPG. Agents become party members, machines b
 
 ![Traveler](preview.png)
 
+![The eight party members working, resting and asking for you](docs/sprites.gif)
+
 ## Features
 
 - **Party cards:** each agent is an animated full-body pixel character that works, rests or waves for you by status, with HP (remaining context), SP (remaining 5-hour quota) and its Claude Code session name.

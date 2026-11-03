@@ -6,6 +6,8 @@
 
 ![Traveler](preview.png)
 
+![八位隊員工作、休息、叫你的樣子](docs/sprites.gif)
+
 ## 功能
 
 - **隊伍卡片：** 每個 agent 是會動的全身像素角色，依狀態工作、休息或揮手叫你，並顯示 HP（剩餘 context）、SP（5 小時額度剩餘）和 Claude Code 的 session 名稱。
