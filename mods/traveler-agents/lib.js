@@ -111,6 +111,16 @@ export function cachePath(appHomeDir, address) {
   return `${base}/${SESSIONS_DIR}/${address}.json`;
 }
 
+// 遠端 agent（imac/t1）：那台自己的 statusLine 寫在它的預設 Herdr 資料夾，
+// readTextFile 帶 on 時相對路徑從那台的家目錄算起（2026-11-03 用 hc file read --on 實測）。
+const MACHINE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+export function remoteCachePath(address) {
+  if (typeof address !== "string") return null;
+  const parts = address.split("/");
+  if (parts.length !== 2 || !MACHINE.test(parts[0]) || !LOCAL_ID.test(parts[1])) return null;
+  return { on: parts[0], path: `.config/herdr-app/${SESSIONS_DIR}/${parts[1]}.json` };
+}
+
 // 快取內容：{ updatedAt, contextRemainingPct, fiveHourRemainingPct, sessionName }，數字、時間與 session 名稱。
 // 單一欄位壞掉只讓該欄位變 null；updatedAt 不合法就整份當作讀不到。
 export function parseCache(text) {

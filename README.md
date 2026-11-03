@@ -61,7 +61,7 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 { "statusLine": { "type": "command", "command": "node ~/.config/herdr-app/data/traveler/statusline.mjs", "refreshInterval": 60 } }
 ```
 
-Add that to `~/.claude/settings.json`. If you already have a status line, it will be replaced. The script stores only numbers and the session name (set with `/rename`). Without it, HP and SP show `—`.
+Add that to `~/.claude/settings.json`. If you already have a status line, it will be replaced. The script stores only numbers and the session name (set with `/rename`). Without it, HP and SP show `—`. For agents on another machine, install the script there too; the card reads it over Herdr's connection once a minute.
 
 ## Uninstall
 

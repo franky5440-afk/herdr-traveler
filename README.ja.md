@@ -61,7 +61,7 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 { "statusLine": { "type": "command", "command": "node ~/.config/herdr-app/data/traveler/statusline.mjs", "refreshInterval": 60 } }
 ```
 
-これを `~/.claude/settings.json` に追加します。既存のステータスラインは置き換えられます。スクリプトが保存するのは数値とセッション名(`/rename` で付けた名前)だけです。設定しない場合、HP と SP は `—` と表示されます。
+これを `~/.claude/settings.json` に追加します。既存のステータスラインは置き換えられます。スクリプトが保存するのは数値とセッション名(`/rename` で付けた名前)だけです。設定しない場合、HP と SP は `—` と表示されます。別のマシンのエージェントは、そのマシンにもスクリプトを入れてください。カードは Herdr の接続を通じて 1 分ごとに読み込みます。
 
 ## アンインストール
 

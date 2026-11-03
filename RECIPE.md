@@ -37,7 +37,7 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - `scripts/traveler-statusline.mjs` (optional): a Claude Code `statusLine` command that writes numbers and the session name to `data/traveler/sessions/<terminal id>.json`. The name is the `session_name` from its input, stripped of control and bidi characters and cut to 80 characters; the mod cleans it again on read.
 - Shipped mods used: `pane`, `files`, `changes`, `workspace-status`, `menu`, `new-menu`, `picker`.
 - Art: 8 portraits, 24 sprite GIFs (8 jobs × 3 states), 4 buildings, 2 icons, 1 sidebar image, in each mod's folder. See `docs/ART-PROMPTS.md`.
-- No mod opens a network connection of its own; on connected remote machines Herdr runs the `git` calls there. Nothing reads credentials.
+- No mod opens a network connection of its own; on connected remote machines Herdr runs the `git` calls there. For agents on another machine (`laptop/t1`), `traveler-agents` reads that machine's `~/.config/herdr-app/data/traveler/sessions/<id>.json` with `readTextFile(path, { on })` once a minute over Herdr's existing connection; it runs nothing there. Nothing reads credentials.
 
 **Watch out:**
 
@@ -51,7 +51,7 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - The clones are of Herdr 0.1.11, and a clean install also passed on 0.1.12. Re-check them after an app update.
 - `herdr-app check` really loads a mod, so `inbox` creates `data/inbox/files` and each mod gets a `data/<mod>/` folder before the layout is switched.
 - Portraits depend on each machine's `jobs.json`. Two machines match only if they have the same file.
-- HP/SP need the optional script and only work for Claude Code. Other agents show `—`.
+- HP/SP need the optional script and only work for Claude Code. Other agents show `—`. A remote agent's card needs the script on that machine, with Herdr in its default folder; widely different clocks make the `old` mark wrong.
 - On a remote machine, counts update when the machine is reachable.
 - Keep `safe.bareRepository=explicit` on the `git status` call: without it, a bare repo committed inside a clone can run a filter as soon as a terminal enters it. It can't stop filters in a repo's own `.git/config`, so tell people not to open terminals in repos they don't trust.
 

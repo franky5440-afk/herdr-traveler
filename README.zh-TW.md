@@ -61,7 +61,7 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 { "statusLine": { "type": "command", "command": "node ~/.config/herdr-app/data/traveler/statusline.mjs", "refreshInterval": 60 } }
 ```
 
-加進 `~/.claude/settings.json`。原本已有 status line 的話會被取代。腳本只存數字和 session 名稱（用 `/rename` 取的）；沒裝時 HP、SP 顯示 `—`。
+加進 `~/.claude/settings.json`。原本已有 status line 的話會被取代。腳本只存數字和 session 名稱（用 `/rename` 取的）；沒裝時 HP、SP 顯示 `—`。其他機器上的 agent，要在那台也裝這個腳本；卡片每分鐘透過 Herdr 的連線讀一次。
 
 ## 解除安裝
 

@@ -3,7 +3,7 @@
 import { View, div, image, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { agents, appHome, readTextFile, run, setAgentOrder, spaces, theme, watchFolder } from "herdr";
-import { assignJobs, cachePath, gauge, jobIn, parseCache, portraitPath, spritePath, tabNames } from "./lib.js";
+import { assignJobs, cachePath, gauge, jobIn, parseCache, portraitPath, remoteCachePath, spritePath, tabNames } from "./lib.js";
 
 const HOME = appHome();
 const SESSIONS_DIR = `${HOME}/data/traveler/sessions`;
@@ -58,15 +58,20 @@ export default class Traveler extends View {
   init(_props, cx) {
     this.jobs = {};
     this.cache = {};
+    this.remote = {};
+    this.tick = 0;
     this.seen = new Set();
     this.watching = false;
     this.loadJobs(cx);
     this.load(cx);
+    this.loadRemote(cx);
     this.watch(cx);
     // 資料是數字，最多 30 秒看一次就夠；也讓「舊」標記自己出現，順便重試監看。
     cx.timer.every(30000, (cx) => {
       this.load(cx);
       this.watch(cx);
+      // 遠端每 60 秒讀一次，跟 statusLine 的更新間隔一樣；遠端資料夾不能監看。
+      if (++this.tick % 2 === 0) this.loadRemote(cx);
     });
   }
 
@@ -109,7 +114,7 @@ export default class Traveler extends View {
     });
   }
 
-  // 每個本機 agent 讀自己那份快取；遠端 agent 沒有本機檔案，畫面顯示「—」。
+  // 每個本機 agent 讀自己那份快取；遠端的由 loadRemote 讀。
   load(cx) {
     const wanted = [];
     for (const a of agents()) {
@@ -129,8 +134,29 @@ export default class Traveler extends View {
     });
   }
 
+  // 遠端 agent 讀它那台的快取檔（透過 Herdr 原有的連線，不執行指令）；連不上就是 null，畫面顯示「—」。
+  loadRemote(cx) {
+    const wanted = [];
+    for (const a of agents()) {
+      const r = remoteCachePath(a.address);
+      if (r === null) continue;
+      this.seen.add(a.address);
+      wanted.push({ address: a.address, ...r });
+    }
+    if (wanted.length === 0) return;
+    cx.spawn(async (cx) => {
+      const next = {};
+      for (const w of wanted) {
+        const text = await readTextFile(w.path, { on: w.on }).catch(() => null);
+        next[w.address] = parseCache(text);
+      }
+      this.remote = next;
+      cx.notify();
+    });
+  }
+
   card(a, now, t) {
-    const cache = this.cache[a.address] ?? null;
+    const cache = this.cache[a.address] ?? this.remote[a.address] ?? null;
     const hp = gauge(cache ? cache.hp : null, cache ? cache.updatedAt : null, now);
     const sp = gauge(cache ? cache.sp : null, cache ? cache.updatedAt : null, now);
     // blocked 一眼看得出來：框線與狀態文字都用 t.blocked，蓋過 focused 的 t.accent。
@@ -178,8 +204,10 @@ export default class Traveler extends View {
     const list = agents();
     this.assigned = assignJobs(tabNames(spaces(), list), this.jobs);
     setAgentOrder(list.map((a) => a.address));
-    // 剛出現的本機 agent 先補讀一次快取，不用等下一次計時器。
-    if (list.some((a) => !this.seen.has(a.address) && cachePath(HOME, a.address) !== null)) this.load(cx);
+    // 剛出現的 agent 先補讀一次快取，不用等下一次計時器。
+    const fresh = list.filter((a) => !this.seen.has(a.address));
+    if (fresh.some((a) => cachePath(HOME, a.address) !== null)) this.load(cx);
+    if (fresh.some((a) => remoteCachePath(a.address) !== null)) this.loadRemote(cx);
     const now = Math.floor(Date.now() / 1000);
     return v_flex()
       .id("traveler")
