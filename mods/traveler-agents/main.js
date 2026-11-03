@@ -3,17 +3,23 @@
 import { View, div, image, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
 import { agents, appHome, readTextFile, run, setAgentOrder, spaces, theme, watchFolder } from "herdr";
-import { assignJobs, cachePath, gauge, jobIn, parseCache, portraitPath, tabNames } from "./lib.js";
+import { assignJobs, cachePath, gauge, jobIn, parseCache, portraitPath, spritePath, tabNames } from "./lib.js";
 
 const HOME = appHome();
 const SESSIONS_DIR = `${HOME}/data/traveler/sessions`;
 const JOBS_FILE = `${HOME}/mods/traveler-agents/jobs.json`;
 const PIC = 72;
+// Full-body sprites are 36x48 pixels at 4x: 72x96 points, two pixels per point on Retina.
+const SPRITE_W = 72;
+const SPRITE_H = 96;
 const STATUS = { working: "Working", blocked: "Needs you", done: "Done", idle: "Idle" };
 
 // 肖像：配到職業就畫肖像圖；沒配到退回程式圖示（單色用 svg、圖片用 image），都沒有就留空。
 function portrait(a, assigned, t) {
-  const src = portraitPath(jobIn(a.tab_name, assigned));
+  const job = jobIn(a.tab_name, assigned);
+  const sprite = spritePath(job, a.status);
+  if (sprite) return image(sprite).w(SPRITE_W).h(SPRITE_H).flex_none();
+  const src = portraitPath(job);
   if (src) return image(src).w(PIC).h(PIC).flex_none();
   const p = a.program;
   if (!p?.icon) return div().w(PIC).h(PIC).flex_none();
@@ -157,6 +163,10 @@ export default class Traveler extends View {
               .items_center()
               .child(div().flex_1().min_w(0).truncate().font_semibold().child(a.tab_name || a.address))
               .child(div().flex_none().text_size(11).text_color(statusColor).child(STATUS[a.status] ?? a.status)),
+          )
+          // Session name (set with /rename) under the tab name; takes no row when unset.
+          .when(Boolean(cache?.name), (el) =>
+            el.child(div().w_full().min_w(0).truncate().text_size(11).text_color(t.dim).child(cache.name)),
           )
           .child(bar("HP", hp, t.accent, t))
           .child(bar("SP", sp, t.solid, t)),

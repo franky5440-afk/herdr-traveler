@@ -10,13 +10,14 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - **Terminals** sit on a hand-drawn fantasy world map: the tab block's pane `background` is `mods/traveler-chrome/map.png` (`cover`), and root `terminal_opacity` is `0.6`, so it shows behind the text. Each split pane crops the map for itself.
 - **Left sidebar, 268px,** one continuous painted town from top to bottom (`mods/traveler-chrome/sidebar.png`, `cover`). Translucent header 46px, footer 69px.
 - **Spaces, top half of the sidebar.** A 76px row per space with a 72px building portrait, the name, and up to three git lines: uncommitted files (`ansi3`), unpushed commits (`ansi2`), repos without a remote (`ansi1`). A clean space shows only its name. The active row has a gold frame on `surface` at `c8` alpha.
-- **Agents, bottom half of the sidebar.** One framed card per agent: 72px portrait, tab name, status word, HP bar in `accent`, SP bar in `solid`.
-- **Tab bar, 42px.** Square tabs with a 22px portrait, plus right-side Files (book, 20px), Changes (ship, 20px) and Inbox (portal, 20px) buttons, each opening its panel on the right.
+- **Agents, bottom half of the sidebar.** One framed card per agent: a 72x96 animated full-body pixel sprite, tab name, status word, the session name in `dim` 11px when there is one, HP bar in `accent`, SP bar in `solid`.
+- **Tab bar, 58px.** Square 48px tabs with a 44px portrait, plus right-side Files (book, 20px), Changes (ship, 20px) and Inbox (portal, 20px) buttons, each opening its panel on the right.
 - **Main area,** terminal panes on `background` with 1px `#c9a96199` borders and an `accent` border on the focused pane. Pane gap 8px, radius 0.
 
 **How it behaves:**
 
-- **working:** blue status word, spinner on the tab.
+- **working:** blue status word, spinner on the tab, the sprite does its job (sword swings, page turns, pestle grinding…).
+- **Sprites:** `blocked` raises a hand under a flashing `!`; `done`, `idle` and no status share the resting pose, which blinks.
 - **blocked:** orange status word, orange card frame, orange dot on the tab, overriding the focused frame.
 - **done:** green status word, green dot on the tab.
 - **idle:** dim status word, nothing on the tab.
@@ -31,11 +32,11 @@ A dusk-toned pixel RPG layout for Herdr. Each agent is a party member with a por
 - `traveler-chrome`: clone of `workspace-chrome`, panel fills at `c8` alpha so the sidebar art shows through. Role by prop `footer`.
 - `traveler-spaces`: clone of `spaces`. Replaces the letter tile with `image()`, row height 76, adds `keysOf` (every terminal folder in a space), `sum` (git counts, one per repo top) and `gitLines`. Runs `git status`, `git rev-parse` and `hc machine ls`. Reads `mods/traveler-spaces/places.json`.
 - `traveler-tabs`: clone of `tabs`, radius removed, portraits and image buttons added. Its `lib.js` is a copy of the one in `traveler-agents`.
-- `traveler-agents`: new mod, uses `agents`, `setAgentOrder`, `readTextFile`, `watchFolder`, `run("agent.focus")`. Reads `mods/traveler-agents/jobs.json` and `data/traveler/sessions/*.json`.
+- `traveler-agents`: new mod, uses `agents`, `setAgentOrder`, `readTextFile`, `watchFolder`, `run("agent.focus")`. Reads `mods/traveler-agents/jobs.json` and `data/traveler/sessions/*.json`. Card sprites are `mods/traveler-agents/sprites/<job>-<working|rest|blocked>.gif`, 144x192 pixel GIFs that `image()` plays natively, no timer.
 - `inbox`: new mod in the `panel-body` stack, listing `data/inbox/files` and opening an allowed file with the system default app (macOS `open`). Runs `mkdir`, `find`, `stat`, `open`.
-- `scripts/traveler-statusline.mjs` (optional): a Claude Code `statusLine` command that writes numbers only to `data/traveler/sessions/<terminal id>.json`.
+- `scripts/traveler-statusline.mjs` (optional): a Claude Code `statusLine` command that writes numbers and the session name to `data/traveler/sessions/<terminal id>.json`. The name is the `session_name` from its input, stripped of control and bidi characters and cut to 80 characters; the mod cleans it again on read.
 - Shipped mods used: `pane`, `files`, `changes`, `workspace-status`, `menu`, `new-menu`, `picker`.
-- Art: 8 portraits, 4 buildings, 2 icons, 1 sidebar image, in each mod's folder. See `docs/ART-PROMPTS.md`.
+- Art: 8 portraits, 24 sprite GIFs (8 jobs × 3 states), 4 buildings, 2 icons, 1 sidebar image, in each mod's folder. See `docs/ART-PROMPTS.md`.
 - No mod opens a network connection of its own; on connected remote machines Herdr runs the `git` calls there. Nothing reads credentials.
 
 **Watch out:**

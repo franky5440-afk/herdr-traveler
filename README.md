@@ -8,7 +8,7 @@ Turn your Herdr window into a pixel RPG. Agents become party members, machines b
 
 ## Features
 
-- **Party cards:** each agent gets a portrait, status, HP (remaining context) and SP (remaining 5-hour quota).
+- **Party cards:** each agent is an animated full-body pixel character that works, rests or waves for you by status, with HP (remaining context), SP (remaining 5-hour quota) and its Claude Code session name.
 - **Buildings:** each machine's space gets a palace, mansion, church or colosseum.
 - **Git at a glance:** uncommitted files, unpushed commits and repos with no remote, added up across every terminal in a space.
 - **Portrait tabs:** every tab shows its agent's face.
@@ -59,7 +59,7 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 { "statusLine": { "type": "command", "command": "node ~/.config/herdr-app/data/traveler/statusline.mjs", "refreshInterval": 60 } }
 ```
 
-Add that to `~/.claude/settings.json`. If you already have a status line, it will be replaced. The script stores only numbers. Without it, HP and SP show `—`.
+Add that to `~/.claude/settings.json`. If you already have a status line, it will be replaced. The script stores only numbers and the session name (set with `/rename`). Without it, HP and SP show `—`.
 
 ## Uninstall
 

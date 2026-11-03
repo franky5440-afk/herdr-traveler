@@ -18,6 +18,9 @@ export const STALE_SECONDS = 300;
 const JOB_SET = new Set(JOBS);
 const SESSIONS_DIR = "data/traveler/sessions";
 const PORTRAITS_DIR = "mods/traveler-agents/art";
+const SPRITES_DIR = "mods/traveler-agents/sprites";
+// 有全身動圖的職業（tools/sprites/build.mjs 產生）；不在清單的職業卡片用肖像。
+const SPRITE_JOBS = new Set(["apothecary", "cleric", "dancer", "hunter", "merchant", "scholar", "thief", "warrior"]);
 
 // 本機終端機代號：跟 scripts/traveler-statusline.mjs 寫檔名的規則一致，不收路徑字元。
 const LOCAL_ID = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
@@ -27,6 +30,15 @@ function pct(value) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100
     ? value
     : null;
+}
+
+// session 名稱（Claude Code 的 /rename）：去掉控制字元與文字方向控制字元、收斂空白，最多 80 字；
+// 跟 scripts/traveler-statusline.mjs 同一套規則，讀的時候再擋一次。
+const NAME_MAX = 80;
+export function cleanName(value) {
+  if (typeof value !== "string") return null;
+  const s = value.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/g, "").replace(/\s+/g, " ").trim();
+  return s === "" ? null : [...s].slice(0, NAME_MAX).join("");
 }
 
 // 分頁名稱配職業：完全相符才配，不分大小寫、忽略前後空白。
@@ -83,6 +95,13 @@ export function portraitPath(job) {
   return typeof job === "string" && JOB_SET.has(job) ? `${PORTRAITS_DIR}/${job}.png` : null;
 }
 
+// 全身動圖：working 揮劍、blocked 舉手、其餘狀態（done、idle、沒有狀態）都是休息。
+export function spritePath(job, status) {
+  if (typeof job !== "string" || !SPRITE_JOBS.has(job)) return null;
+  const state = status === "working" || status === "blocked" ? status : "rest";
+  return `${SPRITES_DIR}/${job}-${state}.gif`;
+}
+
 // 快取只給本機終端機；遠端代號（vps/t7）沒有本機檔案。
 export function cachePath(appHomeDir, address) {
   if (typeof appHomeDir !== "string") return null;
@@ -92,7 +111,7 @@ export function cachePath(appHomeDir, address) {
   return `${base}/${SESSIONS_DIR}/${address}.json`;
 }
 
-// 快取內容：{ updatedAt, contextRemainingPct, fiveHourRemainingPct }，只有數字與時間。
+// 快取內容：{ updatedAt, contextRemainingPct, fiveHourRemainingPct, sessionName }，數字、時間與 session 名稱。
 // 單一欄位壞掉只讓該欄位變 null；updatedAt 不合法就整份當作讀不到。
 export function parseCache(text) {
   if (typeof text !== "string" || text.trim() === "") return null;
@@ -109,6 +128,7 @@ export function parseCache(text) {
     updatedAt,
     hp: pct(data.contextRemainingPct),
     sp: pct(data.fiveHourRemainingPct),
+    name: cleanName(data.sessionName),
   };
 }
 

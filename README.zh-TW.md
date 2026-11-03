@@ -8,7 +8,7 @@
 
 ## 功能
 
-- **隊伍卡片：** 每個 agent 有頭像、狀態、HP（剩餘 context）和 SP（5 小時額度剩餘）。
+- **隊伍卡片：** 每個 agent 是會動的全身像素角色，依狀態工作、休息或揮手叫你，並顯示 HP（剩餘 context）、SP（5 小時額度剩餘）和 Claude Code 的 session 名稱。
 - **建築：** 每台 Machine 的 Space 配皇宮、豪宅、教會或圓形鬥技場。
 - **Git 一眼看：** 未 commit 的檔案、未 push 的 commit、沒接遠端的 repo，加總 Space 內每個終端機的資料夾。
 - **頭像分頁：** 每個分頁都顯示 agent 的臉。
@@ -59,7 +59,7 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 { "statusLine": { "type": "command", "command": "node ~/.config/herdr-app/data/traveler/statusline.mjs", "refreshInterval": 60 } }
 ```
 
-加進 `~/.claude/settings.json`。原本已有 status line 的話會被取代。腳本只存數字；沒裝時 HP、SP 顯示 `—`。
+加進 `~/.claude/settings.json`。原本已有 status line 的話會被取代。腳本只存數字和 session 名稱（用 `/rename` 取的）；沒裝時 HP、SP 顯示 `—`。
 
 ## 解除安裝
 
