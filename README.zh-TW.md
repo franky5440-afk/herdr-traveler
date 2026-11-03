@@ -34,7 +34,12 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 名稱撞到時不要覆蓋自己的檔案，先改名。
 
-更新時：上面的步驟會蓋掉 `mods/traveler-agents/jobs.json` 和 `mods/traveler-spaces/places.json`，請先備份這兩個檔案，裝完再放回去。
+更新時：上面的步驟會蓋掉 `mods/traveler-agents/jobs.json` 和 `mods/traveler-spaces/places.json`，請先備份這兩個檔案，裝完再放回去。也可以用下面這行更新 mods，不碰這兩個檔：
+
+```sh
+H=~/.config/herdr-app
+rsync -a --exclude jobs.json --exclude places.json mods/ "$H/mods/"
+```
 
 ## 自訂
 

@@ -34,7 +34,12 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 名前が重なる場合は、自分のファイルを上書きせず、先に名前を変更してください。
 
-更新するとき: 上の手順は `mods/traveler-agents/jobs.json` と `mods/traveler-spaces/places.json` を上書きします。先にこの 2 つをバックアップし、インストール後に戻してください。
+更新するとき: 上の手順は `mods/traveler-agents/jobs.json` と `mods/traveler-spaces/places.json` を上書きします。先にこの 2 つをバックアップし、インストール後に戻してください。または、この 2 つに触れずに mods を更新します:
+
+```sh
+H=~/.config/herdr-app
+rsync -a --exclude jobs.json --exclude places.json mods/ "$H/mods/"
+```
 
 ## カスタマイズ
 

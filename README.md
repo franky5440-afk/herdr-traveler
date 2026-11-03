@@ -34,7 +34,12 @@ herdr-app do layout.switch '{"name":"traveler"}'
 
 Name clashes: never overwrite your own files. Rename first.
 
-Updating: these steps overwrite `mods/traveler-agents/jobs.json` and `mods/traveler-spaces/places.json`. Back up both first, then put them back.
+Updating: these steps overwrite `mods/traveler-agents/jobs.json` and `mods/traveler-spaces/places.json`. Back up both first, then put them back. Or update the mods while leaving those two files alone:
+
+```sh
+H=~/.config/herdr-app
+rsync -a --exclude jobs.json --exclude places.json mods/ "$H/mods/"
+```
 
 ## Customize
 
