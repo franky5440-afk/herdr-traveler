@@ -32,13 +32,24 @@ function pct(value) {
     : null;
 }
 
-// session 名稱（Claude Code 的 /rename）：去掉控制字元與文字方向控制字元、收斂空白，最多 80 字；
+// 字串欄位：去掉控制字元與文字方向控制字元、收斂空白、去頭尾，最多 max 字；
 // 跟 scripts/traveler-statusline.mjs 同一套規則，讀的時候再擋一次。
-const NAME_MAX = 80;
-export function cleanName(value) {
+function cleanText(value, max) {
   if (typeof value !== "string") return null;
   const s = value.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/g, "").replace(/\s+/g, " ").trim();
-  return s === "" ? null : [...s].slice(0, NAME_MAX).join("");
+  return s === "" ? null : [...s].slice(0, max).join("");
+}
+
+// session 名稱（Claude Code 的 /rename）最多 80 字。
+const NAME_MAX = 80;
+export function cleanName(value) {
+  return cleanText(value, NAME_MAX);
+}
+
+// 模型與 effort 名稱比 session 名稱短：卡片上一行放得下就好。
+const MODEL_MAX = 40;
+function cleanModel(value) {
+  return cleanText(value, MODEL_MAX);
 }
 
 // 分頁名稱配職業：完全相符才配，不分大小寫、忽略前後空白。
@@ -102,6 +113,17 @@ export function spritePath(job, status) {
   return `${SPRITES_DIR}/${job}-${state}.gif`;
 }
 
+// 程式標籤：看 agent 自己回報的 app（OSC 7501），只認這三種；builder 沒有 HP/SP 的來源。
+const APPS = new Map([
+  ["claude-code", { text: "Claude", builder: false }],
+  ["codex", { text: "Codex", builder: true }],
+  ["opencode", { text: "OpenCode", builder: true }],
+]);
+export function appLabel(app) {
+  const found = typeof app === "string" ? APPS.get(app) : undefined;
+  return found ? { ...found } : null;
+}
+
 // 快取只給本機終端機；遠端代號（vps/t7）沒有本機檔案。
 export function cachePath(appHomeDir, address) {
   if (typeof appHomeDir !== "string") return null;
@@ -121,7 +143,7 @@ export function remoteCachePath(address) {
   return { on: parts[0], path: `.config/herdr-app/${SESSIONS_DIR}/${parts[1]}.json` };
 }
 
-// 快取內容：{ updatedAt, contextRemainingPct, fiveHourRemainingPct, sessionName }，數字、時間與 session 名稱。
+// 快取內容：{ updatedAt, contextRemainingPct, fiveHourRemainingPct, sessionName, model, effort }。
 // 單一欄位壞掉只讓該欄位變 null；updatedAt 不合法就整份當作讀不到。
 export function parseCache(text) {
   if (typeof text !== "string" || text.trim() === "") return null;
@@ -139,7 +161,17 @@ export function parseCache(text) {
     hp: pct(data.contextRemainingPct),
     sp: pct(data.fiveHourRemainingPct),
     name: cleanName(data.sessionName),
+    model: cleanModel(data.model),
+    effort: cleanModel(data.effort),
   };
+}
+
+// 卡片上的「模型 · effort」一行：沒有模型就不顯示（effort 單獨出現沒有意義）。
+export function modelText(model, effort) {
+  const m = cleanModel(model);
+  if (m === null) return null;
+  const e = cleanModel(effort);
+  return e === null ? m : `${m} · ${e}`;
 }
 
 // 一條 HP/SP 條要畫的東西：沒有數字（或沒有時間戳）就顯示「—」且不填色；

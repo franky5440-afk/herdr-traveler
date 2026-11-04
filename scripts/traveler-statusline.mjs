@@ -1,16 +1,20 @@
 #!/usr/bin/env node
-// Claude Code statusLine: writes this session's context, 5-hour quota and session
-// name to a cache file for the traveler mod. Prints nothing. Reads no credentials.
+// Claude Code statusLine: writes this session's context, 5-hour quota, session
+// name and current model/effort to a cache file for the traveler mod.
+// Prints nothing. Reads no credentials.
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// Same rule as cleanName in mods/traveler-agents/lib.js.
-const name = (v) => {
+// Same rule as cleanText in mods/traveler-agents/lib.js: drop control and
+// text-direction characters, collapse whitespace, cap the length.
+const text = (v, max) => {
   if (typeof v !== "string") return null;
   const s = v.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/g, "").replace(/\s+/g, " ").trim();
-  return s === "" ? null : [...s].slice(0, 80).join("");
+  return s === "" ? null : [...s].slice(0, max).join("");
 };
+const name = (v) => text(v, 80);
+const model = (v) => text(v, 40);
 const pct = (v) => (typeof v === "number" && v >= 0 && v <= 100 ? v : null);
 
 function main() {
@@ -31,6 +35,9 @@ function main() {
     contextRemainingPct: context === null ? null : Math.round(context),
     fiveHourRemainingPct: used === null ? null : Math.round(100 - used),
     sessionName: name(raw?.session_name),
+    // The model's display name; effort only exists for models that support it.
+    model: model(raw?.model?.display_name),
+    effort: model(raw?.effort?.level),
   };
 
   const dir = process.env.TRAVELER_CACHE_DIR

@@ -11,6 +11,7 @@ Herdr のウィンドウをピクセル RPG に変えるレイアウトです。
 ## 機能
 
 - **パーティーカード:** エージェントごとに動く全身ドット絵キャラクターが、状態に応じて作業・休憩・手を振って呼びかけます。HP(残りコンテキスト)、SP(5 時間枠の残量)、Claude Code のセッション名も表示します。
+- **ひと目で区別:** 各カードにプログラムのタグ(Claude は金、Codex と OpenCode は紫)と、使用中のモデルと effort を表示します。例: `Opus 5.5 · high`。
 - **建物:** マシンの Space ごとに宮殿、屋敷、教会、闘技場のいずれかを割り当てます。
 - **Git の状況:** 未コミットのファイル、未プッシュのコミット、リモートのないリポジトリを、Space 内の全ターミナルのフォルダーについて集計します。
 - **顔グラフィック付きタブ:** 各タブにエージェントの顔を表示します。
@@ -66,7 +67,48 @@ cp scripts/traveler-statusline.mjs ~/.config/herdr-app/data/traveler/statusline.
 { "statusLine": { "type": "command", "command": "node ~/.config/herdr-app/data/traveler/statusline.mjs", "refreshInterval": 60 } }
 ```
 
-これを `~/.claude/settings.json` に追加します。既存のステータスラインは置き換えられます。スクリプトが保存するのは数値とセッション名(`/rename` で付けた名前)だけです。設定しない場合、HP と SP は `—` と表示されます。別のマシンのエージェントは、そのマシンにもスクリプトを入れてください。カードは Herdr の接続を通じて 1 分ごとに読み込みます。
+これを `~/.claude/settings.json` に追加します。既存のステータスラインは置き換えられます。スクリプトが保存するのは数値、セッション名(`/rename` で付けた名前)、モデル名、effort だけです。設定しない場合、HP と SP は `—` と表示されます。別のマシンのエージェントは、そのマシンにもスクリプトを入れてください。カードは Herdr の接続を通じて 1 分ごとに読み込みます。
+
+## Codex と OpenCode のモデルと effort(任意、警告を必ずお読みください)
+
+Claude Code のカードは、上のステータスラインスクリプトからモデルと effort を取得します。Codex と OpenCode にはステータスラインがないため、`scripts/traveler-builder-models.mjs` が 1 分ごとに調べます。入れない場合、これらのカードにはタグだけが表示されます。
+
+> [!WARNING]
+> **インストールする前にスクリプトを読んでください。** モデルを調べるため、会話の全文が入ったファイル(Codex の `~/.codex/sessions/**/rollout-*.jsonl`)と、プロバイダーの認証情報も保存されている OpenCode のデータベース(`~/.local/share/opencode/opencode.db`)を読みます。残すのはモデル名と effort の 2 つの文字列だけです。Codex では `session_meta` と `turn_context` の行だけを解析し、OpenCode のデータベースは読み取り専用で開いて `session_v2` テーブルだけを参照します。実行するのは `~/.local/bin/hc ls --json` だけで、ネットワーク接続は開かず、書き込むのは `~/.config/herdr-app/data/traveler/sessions/<ターミナル ID>.json` だけです。権限が大きすぎると感じたら、この節は飛ばしてください。
+
+どのターミナルがどのフォルダーでどのエージェントを動かしているかを知る必要があるため、Codex や OpenCode は、先に `~/.cache/builder-state/<ターミナル ID>` を書き出す小さな起動スクリプトから起動してください:
+
+```sh
+#!/bin/sh
+# my-codex <folder>   (for OpenCode: kind=opencode and exec opencode)
+d=$(cd "${1:-.}" && pwd -P); id=$HC_TERMINAL_ID
+mkdir -p ~/.cache/builder-state
+printf 'kind=codex\npane=%s\ndir=%s\nstarted=%s\n' "$id" "$d" "$(date +%Y-%m-%dT%H:%M:%S%z)" > ~/.cache/builder-state/"$id"
+cd "$d" && exec codex
+```
+
+次にスクリプトを入れ、launchd で 1 分ごとに実行します(macOS。`node:sqlite` には Node 22.13 以降が必要です):
+
+```sh
+cp scripts/traveler-builder-models.mjs ~/.config/herdr-app/data/traveler/builder-models.mjs
+NODE=$(command -v node)
+cat > ~/Library/LaunchAgents/dev.herdr-traveler.builder-models.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>dev.herdr-traveler.builder-models</string>
+  <key>ProgramArguments</key><array>
+    <string>$NODE</string><string>--no-warnings</string>
+    <string>$HOME/.config/herdr-app/data/traveler/builder-models.mjs</string>
+  </array>
+  <key>StartInterval</key><integer>60</integer>
+  <key>RunAtLoad</key><true/>
+</dict></plist>
+EOF
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.herdr-traveler.builder-models.plist
+```
+
+制限: Codex は、そのターミナルから対話的に始めたセッション(`originator` が `codex-tui`)で、フォルダーが完全に一致するものだけを数えます。同じフォルダーで同じ種類のエージェントを 2 つ動かすと区別できないため、両方ともモデルを表示しません。OpenCode の `default` の effort は effort なしとして扱います。
 
 ## アンインストール
 
@@ -76,6 +118,8 @@ herdr-app do layout.switch '{"name":"main"}'
 rm -rf "$H"/mods/traveler-agents "$H"/mods/traveler-chrome "$H"/mods/traveler-spaces "$H"/mods/traveler-tabs "$H"/mods/inbox
 rm -rf "$H"/data/traveler-agents "$H"/data/traveler-chrome "$H"/data/traveler-spaces "$H"/data/traveler-tabs "$H"/data/traveler "$H"/data/inbox
 rm -f "$H"/layouts/traveler.json "$H"/layouts/traveler.png "$H"/layouts/.state/traveler.json "$H"/themes/traveler-dusk.json
+launchctl bootout gui/$(id -u)/dev.herdr-traveler.builder-models 2>/dev/null
+rm -f ~/Library/LaunchAgents/dev.herdr-traveler.builder-models.plist
 ```
 
 受信箱フォルダー内のファイルも削除されます。残したいものは先に移動してください。Herdr 自身の `seen.json` には MOD 名が残りますが、影響はありません。
@@ -85,6 +129,7 @@ rm -f "$H"/layouts/traveler.json "$H"/layouts/traveler.png "$H"/layouts/.state/t
 - `traveler-spaces` はすべてのターミナルのフォルダーで `git` を自動実行し、`hc machine ls` も実行します。接続中のリモートマシンでは、Herdr がそのマシンで実行します。
 - `inbox` は `mkdir`、`find`、`stat`、`open` を実行します。
 - どの MOD も自らネットワーク接続を開かず、認証情報も読みません。
+- 任意の `traveler-builder-models.mjs` は Herdr の外で動き、上で説明したとおり Codex の会話ファイルと OpenCode のデータベースを読み、`hc ls --json` を実行します。
 - **信頼できないリポジトリの中でターミナルを開かないでください。** `git status` は、そのリポジトリ自身の `.git/config` にあるフィルターを実行することがあります(`.git` を含むダウンロードしたアーカイブなど)。クローン内に隠された bare リポジトリはブロックされます。
 
 ## ライセンスと画像
