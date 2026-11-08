@@ -15,7 +15,7 @@ Turn your Herdr window into a pixel RPG. Agents become party members, machines b
 - **Buildings:** each machine's space gets a palace, mansion, church or colosseum.
 - **Git at a glance:** uncommitted files, unpushed commits and repos with no remote, added up across every terminal in a space.
 - **Portrait tabs:** every tab shows its agent's face.
-- **Inbox panel:** sits beside Files and Changes, lists files dropped into a folder and opens them on click (opening is macOS only).
+- **Inbox panel:** sits beside Files and Changes, lists files dropped into a folder and opens them on click; right-click copies a file to the Desktop or moves it to the Trash (macOS only).
 
 ## Install
 
@@ -127,7 +127,7 @@ This also deletes everything in your inbox folder, so move anything you want to 
 ## What it does on your machine
 
 - `traveler-spaces` runs `git` in every folder your terminals are in, by itself, and `hc machine ls`. On connected remote machines, Herdr runs that `git` there.
-- `inbox` runs `mkdir`, `find`, `stat` and `open`.
+- `inbox` runs `mkdir`, `find`, `stat`, `open`, `cp` (copy to Desktop, never overwrites) and `trash` (Move to Trash).
 - No mod opens a network connection of its own or reads credentials.
 - The optional `traveler-builder-models.mjs` runs outside Herdr, reads Codex conversation files and the OpenCode database as described above, and runs `hc ls --json`.
 - **Don't open a terminal inside a repo you don't trust.** `git status` can run filters from that repo's own `.git/config`, for example in a downloaded archive that includes `.git`. Bare repos hidden inside a clone are blocked.

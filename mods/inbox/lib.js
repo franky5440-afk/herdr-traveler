@@ -16,7 +16,10 @@ const KINDS = {
   mp4: "video",
   mov: "video",
   pdf: "pdf",
+  md: "text",
 };
+
+export const MAX_DESKTOP_TRIES = 20;
 
 // 檔名一律當成單一檔名看待：不能有路徑、不能是隱藏檔。
 function isPlainName(name) {
@@ -105,6 +108,39 @@ export function openCommand(path, dir) {
   const name = path.slice(prefix.length);
   if (!isAllowedName(name)) return null;
   return { cmd: "/usr/bin/open", args: [path] };
+}
+
+// 只有收件匣第一層的白名單檔案才算數；回傳檔名，不合格回 null。
+function inboxName(path, dir) {
+  const prefix = prefixOf(dir);
+  if (typeof path !== "string" || !path.startsWith(prefix)) return null;
+  const name = path.slice(prefix.length);
+  return isAllowedName(name) ? name : null;
+}
+
+// 複製到桌面的目的檔名：原名先試，撞名照 Finder 的習慣加「 2」「 3」。
+export function desktopCandidates(name) {
+  if (!isAllowedName(name)) return [];
+  const dot = name.lastIndexOf(".");
+  const stem = name.slice(0, dot);
+  const ext = name.slice(dot);
+  const out = [name];
+  for (let n = 2; n <= MAX_DESKTOP_TRIES; n += 1) out.push(`${stem} ${n}${ext}`);
+  return out;
+}
+
+// cp -n 不覆蓋既有檔案（撞名時 exit 1，換下一個候選名）。
+export function copyCommand(path, dir, destDir, name) {
+  if (inboxName(path, dir) === null) return null;
+  if (!isAllowedName(name)) return null;
+  if (typeof destDir !== "string" || !destDir.startsWith("/")) return null;
+  return { cmd: "/bin/cp", args: ["-n", "--", path, prefixOf(destDir) + name] };
+}
+
+// 丟到垃圾桶（macOS 內建 /usr/bin/trash），可以從垃圾桶救回來。
+export function trashCommand(path, dir) {
+  if (inboxName(path, dir) === null) return null;
+  return { cmd: "/usr/bin/trash", args: [path] };
 }
 
 // image() 只讀 Herdr 家目錄的相對路徑，所以回傳 data/inbox/files/<檔名>。

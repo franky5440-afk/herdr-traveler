@@ -1,15 +1,17 @@
 // 收件匣：列出 appHome()/data/inbox/files 的檔案，點一下用 macOS 預設 App 開啟。
-// 只讀：不刪檔、不寫檔、不連網，檔名一律當文字顯示，exec 一律用參數陣列。
+// 右鍵：複製到桌面（cp -n，不覆蓋）、丟到垃圾桶（/usr/bin/trash，可救回）；此外不寫檔、不連網，
+// 檔名一律當文字顯示，exec 一律用參數陣列。
 import { View, div, image } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { appHome, exec, theme, watchFolder } from "herdr";
+import { appHome, exec, home, theme, watchFolder } from "herdr";
 import {
-  formatSize, isRegularFile, listCommand, openCommand, parseListing,
-  statCommand, thumbSource,
+  copyCommand, desktopCandidates, formatSize, isRegularFile, listCommand,
+  openCommand, parseListing, statCommand, thumbSource, trashCommand,
 } from "./lib.js";
 
 const INBOX_DIR = appHome() + "/data/inbox/files";
-const BADGE = { image: "Image", video: "Video", pdf: "PDF" };
+const DESKTOP_DIR = home() + "/Desktop";
+const BADGE = { image: "Image", video: "Video", pdf: "PDF", text: "MD" };
 
 function clockText(seconds) {
   const d = new Date(seconds * 1000);
@@ -23,6 +25,8 @@ export default class Inbox extends View {
     this.error = null;
     this.loading = true;
     this.notice = null;
+    this.noticeOk = false;
+    this.menuPath = null;
     cx.spawn(async (cx) => {
       const made = await exec("/bin/mkdir", ["-p", INBOX_DIR]).catch(() => null);
       if (!made || made.code !== 0) {
@@ -59,23 +63,91 @@ export default class Inbox extends View {
     cx.notify();
   }
 
+  // 動手前一律複查：還是收件匣裡的一般檔案（不是符號連結）。
+  async stillRegular(item) {
+    const stat = statCommand(item.path);
+    const checked = await exec(stat.cmd, stat.args).catch(() => null);
+    return Boolean(checked && checked.code === 0 && isRegularFile(checked.stdout));
+  }
+
+  say(cx, text, ok = false) {
+    this.notice = text;
+    this.noticeOk = ok;
+    cx.notify();
+  }
+
   // 點一列：先確認還是收件匣裡的一般檔案，再交給 open。
   launch(item, cx) {
+    this.menuPath = null;
     cx.spawn(async (cx) => {
-      const stat = statCommand(item.path);
-      const checked = await exec(stat.cmd, stat.args).catch(() => null);
-      const command = checked && checked.code === 0 && isRegularFile(checked.stdout)
-        ? openCommand(item.path, INBOX_DIR)
-        : null;
-      if (!command) {
-        this.notice = `Cannot open: ${item.name}`;
-        cx.notify();
-        return;
-      }
+      const command = (await this.stillRegular(item)) ? openCommand(item.path, INBOX_DIR) : null;
+      if (!command) return this.say(cx, `Cannot open: ${item.name}`);
       const opened = await exec(command.cmd, command.args).catch(() => null);
-      this.notice = opened && opened.code === 0 ? null : `Cannot open: ${item.name}`;
-      cx.notify();
+      if (opened && opened.code === 0) {
+        this.notice = null;
+        cx.notify();
+      } else {
+        this.say(cx, `Cannot open: ${item.name}`);
+      }
     });
+  }
+
+  // 複製到桌面：原名先試，撞名就換「 2」「 3」…，cp -n 保證不蓋掉桌面上的檔案。
+  copyToDesktop(item, cx) {
+    this.menuPath = null;
+    cx.spawn(async (cx) => {
+      if (!(await this.stillRegular(item))) return this.say(cx, `Cannot copy: ${item.name}`);
+      for (const name of desktopCandidates(item.name)) {
+        const command = copyCommand(item.path, INBOX_DIR, DESKTOP_DIR, name);
+        if (!command) break;
+        const copied = await exec(command.cmd, command.args).catch(() => null);
+        if (copied && copied.code === 0) return this.say(cx, `Copied to the Desktop: ${name}`, true);
+        if (!copied) break;
+      }
+      this.say(cx, `Cannot copy to the Desktop: ${item.name}`);
+    });
+  }
+
+  // 丟到垃圾桶：用 macOS 內建 trash，誤刪可以從垃圾桶救回。
+  moveToTrash(item, cx) {
+    this.menuPath = null;
+    cx.spawn(async (cx) => {
+      const command = (await this.stillRegular(item)) ? trashCommand(item.path, INBOX_DIR) : null;
+      if (!command) return this.say(cx, `Cannot move to the Trash: ${item.name}`);
+      const trashed = await exec(command.cmd, command.args).catch(() => null);
+      if (trashed && trashed.code === 0) this.say(cx, `Moved to the Trash: ${item.name}`, true);
+      else this.say(cx, `Cannot move to the Trash: ${item.name}`);
+    });
+  }
+
+  menuItem(id, label, t, action) {
+    return div()
+      .id(id)
+      .px(10)
+      .py(6)
+      .cursor_pointer()
+      .hover((s) => s.bg(t.hover))
+      .on_click((_event, cx) => action(cx))
+      .child(label);
+  }
+
+  menu(item, index, t) {
+    return v_flex()
+      .id(`inbox-menu-${index}`)
+      .flex_none()
+      .mx(10)
+      .mb(4)
+      .py(4)
+      .bg(t.raised)
+      .border_1()
+      .border_color(t.border)
+      .text_size(12)
+      .on_mouse_down_out((_event, cx) => {
+        this.menuPath = null;
+        cx.notify();
+      })
+      .child(this.menuItem(`inbox-copy-${index}`, "Copy to Desktop", t, (cx) => this.copyToDesktop(item, cx)))
+      .child(this.menuItem(`inbox-trash-${index}`, "Move to Trash", t, (cx) => this.moveToTrash(item, cx)));
   }
 
   badge(item, t) {
@@ -101,6 +173,10 @@ export default class Inbox extends View {
       .cursor_pointer()
       .hover((s) => s.bg(t.hover))
       .on_click((_event, cx) => this.launch(item, cx))
+      .on_mouse_down("right", (_event, cx) => {
+        this.menuPath = this.menuPath === item.path ? null : item.path;
+        cx.notify();
+      })
       .child(thumb ? image(thumb).w(40).h(40).flex_none() : this.badge(item, t))
       .child(
         v_flex()
@@ -119,7 +195,8 @@ export default class Inbox extends View {
 
   render(cx) {
     const t = theme();
-    const rows = this.items.map((item, index) => this.row(item, index, t));
+    const rows = this.items.flatMap((item, index) =>
+      item.path === this.menuPath ? [this.row(item, index, t), this.menu(item, index, t)] : [this.row(item, index, t)]);
     return v_flex()
       .id("inbox")
       .size_full()
@@ -146,7 +223,7 @@ export default class Inbox extends View {
           .overflow_y_scrollbar()
           .p(6)
           .children(rows)
-          .when(Boolean(this.notice), (el) => el.child(div().p(8).text_size(12).text_color(t.blocked).child(this.notice)))
+          .when(Boolean(this.notice), (el) => el.child(div().p(8).text_size(12).text_color(this.noticeOk ? t.dim : t.blocked).child(this.notice)))
           .when(Boolean(this.error), (el) => el.child(div().p(8).text_size(12).text_color(t.blocked).child(this.error)))
           .when(!this.error && this.items.length === 0, (el) =>
             el

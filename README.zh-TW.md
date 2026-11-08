@@ -15,7 +15,7 @@
 - **建築：** 每台 Machine 的 Space 配皇宮、豪宅、教會或圓形鬥技場。
 - **Git 一眼看：** 未 commit 的檔案、未 push 的 commit、沒接遠端的 repo，加總 Space 內每個終端機的資料夾。
 - **頭像分頁：** 每個分頁都顯示 agent 的臉。
-- **收件匣面板：** 和 Files、Changes 並列，列出丟進資料夾的檔案，點一下開啟（開檔僅支援 macOS）。
+- **收件匣面板：** 和 Files、Changes 並列，列出丟進資料夾的檔案，點一下開啟；按右鍵可以複製到桌面或丟到垃圾桶（僅支援 macOS）。
 
 ## 安裝
 
@@ -127,7 +127,7 @@ rm -f ~/Library/LaunchAgents/dev.herdr-traveler.builder-models.plist
 ## 它會在你的電腦上做什麼
 
 - `traveler-spaces` 會自動在每個終端機所在的資料夾跑 `git`，並跑 `hc machine ls`。已連線的遠端機器，Herdr 會在那台執行。
-- `inbox` 會跑 `mkdir`、`find`、`stat`、`open`。
+- `inbox` 會跑 `mkdir`、`find`、`stat`、`open`、`cp`（複製到桌面，不覆蓋）、`trash`（丟到垃圾桶）。
 - 所有 MOD 都不會自己開網路連線，也不讀憑證。
 - 選用的 `traveler-builder-models.mjs` 在 Herdr 外執行，會照上面說的讀 Codex 對話檔與 OpenCode 資料庫，並執行 `hc ls --json`。
 - **不要在不信任的 repo 裡開終端機。** `git status` 可能執行該 repo 自己 `.git/config` 裡的 filter，例如下載的壓縮檔裡帶有 `.git`。藏在 clone 裡的 bare repo 已被擋下。
