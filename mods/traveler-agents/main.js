@@ -185,7 +185,8 @@ export default class Traveler extends View {
   // 動圖換格：視窗在前景才排下一次換格（只排一個），換格時重畫一次；
   // 視窗不在前景（縮到 Dock、切到別的 App）就停在第一格、不排計時器，完全不重畫。
   sprites(list, cx) {
-    const live = window().active;
+    // window() 可能是 null（視窗還沒建好、或在 herdr-app check 裡）：當成不在前景。
+    const live = window()?.active === true;
     const elapsed = Date.now() - this.started;
     let wait = Infinity;
     const out = {};
