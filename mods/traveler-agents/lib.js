@@ -106,11 +106,39 @@ export function portraitPath(job) {
   return typeof job === "string" && JOB_SET.has(job) ? `${PORTRAITS_DIR}/${job}.png` : null;
 }
 
+// 全身動圖每一格停留的毫秒數（從原本的 GIF 讀出來的節奏），檔名是 <職業>-<狀態>-<第幾格>.png。
+// 不用 GIF：image() 播 GIF 時每個螢幕更新週期都重畫整個視窗，縮到 Dock 也照畫；
+// 逐格換圖只在換格那一刻重畫一次。
+const REST = [1800, 140, 900, 700];
+const BLOCKED = [320, 320];
+const SPRITE_DELAYS = {
+  apothecary: { rest: REST, blocked: BLOCKED, working: [100, 240, 60, 100, 140, 120] },
+  cleric: { rest: REST, blocked: BLOCKED, working: [300, 120, 120, 130, 200, 350, 150] },
+  dancer: { rest: REST, blocked: BLOCKED, working: [220, 100, 220, 100, 240, 160] },
+  hunter: { rest: [1600, 140, 900, 700], blocked: BLOCKED, working: [200, 100, 160, 100, 360, 80, 120, 200] },
+  merchant: { rest: REST, blocked: BLOCKED, working: [220, 70, 90, 160, 80, 140] },
+  scholar: { rest: REST, blocked: BLOCKED, working: [360, 360, 100, 80, 100, 300, 80, 240, 80] },
+  thief: { rest: [1700, 140, 1000, 700], blocked: BLOCKED, working: [160, 70, 70, 90, 200, 70, 140] },
+  warrior: { rest: REST, blocked: BLOCKED, working: [260, 140, 70, 90, 240] },
+};
+
 // 全身動圖：working 揮劍、blocked 舉手、其餘狀態（done、idle、沒有狀態）都是休息。
-export function spritePath(job, status) {
+// 回傳每一格的 { path, ms }；沒有動圖的職業回傳 null。
+export function spriteFrames(job, status) {
   if (typeof job !== "string" || !SPRITE_JOBS.has(job)) return null;
   const state = status === "working" || status === "blocked" ? status : "rest";
-  return `${SPRITES_DIR}/${job}-${state}.gif`;
+  return SPRITE_DELAYS[job][state].map((ms, i) => ({ path: `${SPRITES_DIR}/${job}-${state}-${i}.png`, ms }));
+}
+
+// 播了 elapsed 毫秒時該畫第幾格，以及離換下一格還有幾毫秒。
+export function frameAt(frames, elapsed) {
+  const total = frames.reduce((n, f) => n + f.ms, 0);
+  let t = ((elapsed % total) + total) % total;
+  for (let i = 0; i < frames.length; i++) {
+    if (t < frames[i].ms) return { index: i, wait: frames[i].ms - t };
+    t -= frames[i].ms;
+  }
+  return { index: 0, wait: frames[0].ms };
 }
 
 // 程式標籤：看 agent 自己回報的 app（OSC 7501），只認這三種；builder 沒有 HP/SP 的來源。

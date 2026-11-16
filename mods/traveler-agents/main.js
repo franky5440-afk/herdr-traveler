@@ -2,8 +2,8 @@
 // 只讀快取檔、不跑指令、不連網、不讀對話紀錄與憑證，沒有數字就不畫數字。
 import { View, div, image, svg } from "gpui-kit";
 import { h_flex, v_flex } from "gpui-base";
-import { agents, appHome, readTextFile, run, setAgentOrder, spaces, theme, watchFolder } from "herdr";
-import { appLabel, assignJobs, cachePath, gauge, jobIn, modelText, parseCache, portraitPath, remoteCachePath, spritePath, tabNames } from "./lib.js";
+import { agents, appHome, readTextFile, run, setAgentOrder, spaces, theme, watchFolder, window } from "herdr";
+import { appLabel, assignJobs, cachePath, frameAt, gauge, jobIn, modelText, parseCache, portraitPath, remoteCachePath, spriteFrames, tabNames } from "./lib.js";
 
 const HOME = appHome();
 const SESSIONS_DIR = `${HOME}/data/traveler/sessions`;
@@ -14,10 +14,9 @@ const SPRITE_W = 72;
 const SPRITE_H = 96;
 const STATUS = { working: "Working", blocked: "Needs you", done: "Done", idle: "Idle" };
 
-// 肖像：配到職業就畫肖像圖；沒配到退回程式圖示（單色用 svg、圖片用 image），都沒有就留空。
-function portrait(a, assigned, t) {
+// 肖像：有全身動圖就畫 render 算好的那一格；否則配到職業畫肖像圖；沒配到退回程式圖示（單色用 svg、圖片用 image），都沒有就留空。
+function portrait(a, assigned, sprite, t) {
   const job = jobIn(a.tab_name, assigned);
-  const sprite = spritePath(job, a.status);
   if (sprite) return image(sprite).w(SPRITE_W).h(SPRITE_H).flex_none();
   const src = portraitPath(job);
   if (src) return image(src).w(PIC).h(PIC).flex_none();
@@ -86,6 +85,8 @@ export default class Traveler extends View {
     this.cache = {};
     this.remote = {};
     this.tick = 0;
+    this.started = Date.now();
+    this.nextFrame = null;
     this.seen = new Set();
     this.watching = false;
     this.loadJobs(cx);
@@ -181,7 +182,35 @@ export default class Traveler extends View {
     });
   }
 
-  card(a, now, t) {
+  // 動圖換格：視窗在前景才排下一次換格（只排一個），換格時重畫一次；
+  // 視窗不在前景（縮到 Dock、切到別的 App）就停在第一格、不排計時器，完全不重畫。
+  sprites(list, cx) {
+    const live = window().active;
+    const elapsed = Date.now() - this.started;
+    let wait = Infinity;
+    const out = {};
+    for (const a of list) {
+      const frames = spriteFrames(jobIn(a.tab_name, this.assigned), a.status);
+      if (!frames) continue;
+      if (!live) {
+        out[a.address] = frames[0].path;
+        continue;
+      }
+      const f = frameAt(frames, elapsed);
+      wait = Math.min(wait, f.wait);
+      out[a.address] = frames[f.index].path;
+    }
+    this.nextFrame?.cancel();
+    this.nextFrame = Number.isFinite(wait)
+      ? cx.timer.after(Math.max(wait, 16), (cx) => {
+          this.nextFrame = null;
+          cx.notify();
+        })
+      : null;
+    return out;
+  }
+
+  card(a, now, sprite, t) {
     const cache = this.cache[a.address] ?? this.remote[a.address] ?? null;
     const hp = gauge(cache ? cache.hp : null, cache ? cache.updatedAt : null, now);
     const sp = gauge(cache ? cache.sp : null, cache ? cache.updatedAt : null, now);
@@ -203,7 +232,7 @@ export default class Traveler extends View {
       .cursor_pointer()
       .hover((s) => s.bg(t.hover))
       .on_click(() => run("agent.focus", { terminal: a.address }))
-      .child(portrait(a, this.assigned, t))
+      .child(portrait(a, this.assigned, sprite, t))
       .child(
         v_flex()
           .flex_1()
@@ -241,6 +270,7 @@ export default class Traveler extends View {
     if (fresh.some((a) => cachePath(HOME, a.address) !== null)) this.load(cx);
     if (fresh.some((a) => remoteCachePath(a.address) !== null)) this.loadRemote(cx);
     const now = Math.floor(Date.now() / 1000);
+    const sprites = this.sprites(list, cx);
     return v_flex()
       .id("traveler")
       .size_full()
@@ -254,7 +284,7 @@ export default class Traveler extends View {
           .gap(6)
           .p(6)
           .overflow_y_scrollbar()
-          .children(list.map((a) => this.card(a, now, t)))
+          .children(list.map((a) => this.card(a, now, sprites[a.address] ?? null, t)))
           .when(list.length === 0, (el) =>
             el.child(div().p(8).text_size(12).text_color(t.dim).child("No agents")),
           ),
